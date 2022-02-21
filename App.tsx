@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import React, { ChangeEvent, useEffect, useState } from "react";
+import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -29,7 +29,11 @@ export default function App() {
   const [textTyped, setTextTyped] = useState("");
   const [toDos, setToDos] = useState<IToDos>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [modifiedKey, setModifiedKey] = useState("");
+  const [textTypedToModi, setTextTypedToModi] = useState("");
+  const [inputIdx, setInputsIdx] = useState(-1);
 
+  const inputs = useRef<TextInput[]>([]);
   useEffect(() => {
     loadToDos();
   }, []);
@@ -41,7 +45,9 @@ export default function App() {
   const onChangeText = (text: string) => {
     setTextTyped(text);
   };
-
+  const onChangeTextToModi = (text: string) => {
+    setTextTypedToModi(text);
+  };
   const addToDo = async () => {
     if (textTyped === "") {
       return;
@@ -87,6 +93,26 @@ export default function App() {
     }
   };
 
+  const modifyToDo = (key: string, text: string, idx: number) => {
+    setModifiedKey(key);
+    setTextTypedToModi(text);
+    setInputsIdx(idx);
+  };
+
+  const updateToDo = (key: string) => {
+    const newToDos = {
+      ...toDos,
+      [key]: { ...toDos[key], text: textTypedToModi },
+    };
+    setToDos(newToDos);
+    saveToDos(newToDos);
+    setModifiedKey("");
+  };
+
+  useEffect(() => {
+    if (inputIdx !== -1) inputs.current[inputIdx];
+  }, [modifiedKey]);
+
   return (
     <View style={[styles.container]}>
       <StatusBar style="auto" />
@@ -118,16 +144,38 @@ export default function App() {
         <ScrollView>
           {Object.keys(toDos).map((key, idx) =>
             working === toDos[key].working ? (
-              <View key={idx} style={styles.toDo}>
-                <Text style={styles.toDoText}>{toDos[key].text}</Text>
-                <TouchableOpacity onPress={() => deleteToDo(key)}>
-                  <AntDesign
-                    name={icons["delete"]}
-                    size={16}
-                    color={theme.grey}
-                  />
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity
+                key={idx}
+                onPress={() => modifyToDo(key, toDos[key].text, idx)}
+              >
+                <View
+                  style={
+                    modifiedKey !== key
+                      ? styles.toDo
+                      : [styles.toDo, { backgroundColor: "white" }]
+                  }
+                >
+                  {modifiedKey === key ? (
+                    <TextInput
+                      ref={(el) => (el ? (inputs.current[idx] = el) : null)}
+                      onSubmitEditing={() => updateToDo(key)}
+                      style={styles.toDoTextInput}
+                      value={textTypedToModi}
+                      onChangeText={onChangeTextToModi}
+                    />
+                  ) : (
+                    <Text style={styles.toDoText}>{toDos[key].text}</Text>
+                  )}
+
+                  <TouchableOpacity onPress={() => deleteToDo(key)}>
+                    <AntDesign
+                      name={icons["delete"]}
+                      size={16}
+                      color={theme.grey}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
             ) : null
           )}
         </ScrollView>
@@ -165,5 +213,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     borderRadius: 15,
   },
-  toDoText: { color: theme.grey, fontSize: 16, fontWeight: "500" },
+  toDoText: {
+    color: theme.grey,
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  toDoTextInput: {
+    color: "black",
+    backgroundColor: "white",
+    width: "90%",
+  },
 });
