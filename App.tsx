@@ -115,7 +115,7 @@ export default function App() {
 
   return (
     <View style={[styles.container]}>
-      <StatusBar style="auto" />
+      <StatusBar style="light" />
       <View style={styles.header}>
         <TouchableOpacity onPress={work}>
           <Text
@@ -132,7 +132,7 @@ export default function App() {
           </Text>
         </TouchableOpacity>
       </View>
-      <View>
+      <View style={[styles.scrollContainer]}>
         <TextInput
           onSubmitEditing={addToDo}
           style={styles.input}
@@ -158,6 +158,7 @@ export default function App() {
                   {modifiedKey === key ? (
                     <TextInput
                       ref={(el) => (el ? (inputs.current[idx] = el) : null)}
+                      returnKeyType="done"
                       onSubmitEditing={() => updateToDo(key)}
                       style={styles.toDoTextInput}
                       value={textTypedToModi}
@@ -189,12 +190,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.bg,
     paddingHorizontal: 20,
+    paddingVertical: 20,
   },
   header: {
+    flex: 1,
     flexDirection: "row",
-    marginTop: 100,
+    marginTop: 20,
     justifyContent: "space-between",
   },
+  scrollContainer: { flex: 10 },
   btnText: { fontSize: 38, fontWeight: "600" },
   input: {
     backgroundColor: "white",
