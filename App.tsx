@@ -1,83 +1,48 @@
 import { StatusBar } from "expo-status-bar";
-import React, { ChangeEvent, useEffect, useRef, useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  TouchableHighlight,
-  TouchableWithoutFeedback,
-  Pressable,
-  TextInput,
-  ScrollView,
-  Alert,
-} from "react-native";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, View, Alert } from "react-native";
 import { theme } from "./colors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { AntDesign } from "@expo/vector-icons";
+import ToDosList from "./components/ToDosList";
+import { IGlobalState, IToDos } from "./type";
+import Header from "./components/Header";
+import ToDoInput from "./components/ToDoInput";
 
-interface IToDos {
-  [key: string]: { text: string; working: boolean };
-}
-
-const icons: { [key: string]: "delete" } = {
-  delete: "delete" as const,
-};
 const STORAGE_KEY = "@toDos";
 export default function App() {
-  const [working, setWorking] = useState(true);
   const [textTyped, setTextTyped] = useState("");
-  const [toDos, setToDos] = useState<IToDos>({});
-  const [isLoading, setIsLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [globalState, setGlobalState] = useState<IGlobalState>({
+    isWorkShowedLast: undefined,
+    toDos: {},
+  });
+
+  const { isWorkShowedLast, toDos } = globalState;
+
   const [modifiedKey, setModifiedKey] = useState("");
   const [textTypedToModi, setTextTypedToModi] = useState("");
-  const [inputIdx, setInputsIdx] = useState(-1);
 
-  const inputs = useRef<TextInput[]>([]);
   useEffect(() => {
     loadToDos();
   }, []);
 
   const travel = () => {
-    setWorking(false);
+    setGlobalState({ ...globalState, isWorkShowedLast: false });
+    saveStateToStorage({ ...globalState, isWorkShowedLast: false });
   };
-  const work = () => setWorking(true);
+  const work = () => {
+    setGlobalState({ ...globalState, isWorkShowedLast: true });
+    saveStateToStorage({ ...globalState, isWorkShowedLast: true });
+  };
+
   const onChangeText = (text: string) => {
     setTextTyped(text);
   };
   const onChangeTextToModi = (text: string) => {
     setTextTypedToModi(text);
   };
-  const addToDo = async () => {
-    if (textTyped === "") {
-      return;
-    }
 
-    const newTodo = { ...toDos, [Date.now()]: { text: textTyped, working } };
-
-    setToDos((curr) => newTodo);
-    await saveToDos({
-      ...toDos,
-      ...newTodo,
-    });
-    setTextTyped("");
-  };
-
-  const deleteToDo = async (key: string) => {
-    Alert.alert("Delete", "Are you sure to delete of it?", [
-      { text: "취소" },
-      {
-        text: "지우기",
-        onPress: async () => {
-          const newToDos = { ...toDos };
-          delete newToDos[key];
-          setToDos(newToDos);
-          await saveToDos(newToDos);
-        },
-      },
-    ]);
-  };
-  const saveToDos = async (value: IToDos) => {
+  const saveStateToStorage = async (value: IGlobalState) => {
     try {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(value));
     } catch (error: any) {
@@ -87,100 +52,102 @@ export default function App() {
   const loadToDos = async () => {
     try {
       const s = await AsyncStorage.getItem(STORAGE_KEY);
-      s && setToDos(JSON.parse(s));
+      s && setGlobalState(JSON.parse(s));
     } catch (error: any) {
       throw new Error(error.message);
     }
   };
 
-  const modifyToDo = (key: string, text: string, idx: number) => {
+  const openModInput = (key: string, text: string) => {
     setModifiedKey(key);
+    setIsModalOpen(true);
     setTextTypedToModi(text);
-    setInputsIdx(idx);
   };
 
-  const updateToDo = (key: string) => {
+  const closeModInput = () => {
+    setIsModalOpen(false);
+    setModifiedKey("");
+  };
+
+  const addToDo = async () => {
+    if (textTyped === "") {
+      return;
+    }
+    const newToDos: IToDos = {
+      ...toDos,
+      [Date.now()]: { text: textTyped, working: isWorkShowedLast, done: false },
+    };
+    const state = { ...globalState, toDos: newToDos };
+
+    setGlobalState((curr) => state);
+    await saveStateToStorage(state);
+    setTextTyped("");
+  };
+
+  const updateToDo = async (key: string) => {
     const newToDos = {
       ...toDos,
       [key]: { ...toDos[key], text: textTypedToModi },
     };
-    setToDos(newToDos);
-    saveToDos(newToDos);
+    const state = { ...globalState, toDos: newToDos };
+    setGlobalState(state);
+    await saveStateToStorage(state);
     setModifiedKey("");
   };
 
-  useEffect(() => {
-    if (inputIdx !== -1) inputs.current[inputIdx];
-  }, [modifiedKey]);
+  const deleteToDo = async (key: string) => {
+    Alert.alert("Delete", "Are you sure to delete of it?", [
+      { text: "Cancel" },
+      {
+        text: "Remove",
+        onPress: async () => {
+          const newToDos = { ...toDos };
+          delete newToDos[key];
+          const state = { ...globalState, toDos: newToDos };
+          setGlobalState(state);
+          await saveStateToStorage(state);
+        },
+      },
+    ]);
+  };
 
+  const addToDoBack = async (key: string) => {
+    const newToDos = { ...toDos, [key]: { ...toDos[key], done: false } };
+    const state = { ...globalState, toDos: newToDos };
+    setGlobalState(state);
+    await saveStateToStorage(state);
+  };
+
+  const completeToDo = async (key: string) => {
+    const newToDos = { ...toDos, [key]: { ...toDos[key], done: true } };
+    const state = { ...globalState, toDos: newToDos };
+    setGlobalState(state);
+    await saveStateToStorage(state);
+  };
   return (
     <View style={[styles.container]}>
       <StatusBar style="light" />
-      <View style={styles.header}>
-        <TouchableOpacity onPress={work}>
-          <Text
-            style={[styles.btnText, { color: working ? "white" : theme.grey }]}
-          >
-            Work
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={travel}>
-          <Text
-            style={[styles.btnText, { color: !working ? "white" : theme.grey }]}
-          >
-            Travel
-          </Text>
-        </TouchableOpacity>
-      </View>
-      <View style={[styles.scrollContainer]}>
-        <TextInput
-          onSubmitEditing={addToDo}
-          style={styles.input}
-          returnKeyType="done"
-          onChangeText={onChangeText}
-          value={textTyped}
-          placeholder={working ? "Add a To Do" : "Where do you want to go"}
-        />
-        <ScrollView>
-          {Object.keys(toDos).map((key, idx) =>
-            working === toDos[key].working ? (
-              <TouchableOpacity
-                key={idx}
-                onPress={() => modifyToDo(key, toDos[key].text, idx)}
-              >
-                <View
-                  style={
-                    modifiedKey !== key
-                      ? styles.toDo
-                      : [styles.toDo, { backgroundColor: "white" }]
-                  }
-                >
-                  {modifiedKey === key ? (
-                    <TextInput
-                      ref={(el) => (el ? (inputs.current[idx] = el) : null)}
-                      returnKeyType="done"
-                      onSubmitEditing={() => updateToDo(key)}
-                      style={styles.toDoTextInput}
-                      value={textTypedToModi}
-                      onChangeText={onChangeTextToModi}
-                    />
-                  ) : (
-                    <Text style={styles.toDoText}>{toDos[key].text}</Text>
-                  )}
-
-                  <TouchableOpacity onPress={() => deleteToDo(key)}>
-                    <AntDesign
-                      name={icons["delete"]}
-                      size={16}
-                      color={theme.grey}
-                    />
-                  </TouchableOpacity>
-                </View>
-              </TouchableOpacity>
-            ) : null
-          )}
-        </ScrollView>
-      </View>
+      <Header isWorkShowedLast={isWorkShowedLast} work={work} travel={travel} />
+      <ToDoInput
+        isWorkShowedLast={isWorkShowedLast}
+        textTyped={textTyped}
+        onChangeText={onChangeText}
+        addToDo={addToDo}
+      />
+      <ToDosList
+        closeModInput={closeModInput}
+        isWorkShowedLast={isWorkShowedLast}
+        toDos={toDos}
+        textTypedToModi={textTypedToModi}
+        isModalOpen={isModalOpen}
+        onChangeTextToModi={onChangeTextToModi}
+        openModInput={openModInput}
+        modifiedKey={modifiedKey}
+        updateToDo={updateToDo}
+        deleteToDo={deleteToDo}
+        addToDoBack={addToDoBack}
+        completeToDo={completeToDo}
+      />
     </View>
   );
 }
@@ -198,33 +165,5 @@ const styles = StyleSheet.create({
     marginTop: 20,
     justifyContent: "space-between",
   },
-  scrollContainer: { flex: 10 },
   btnText: { fontSize: 38, fontWeight: "600" },
-  input: {
-    backgroundColor: "white",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 30,
-    marginVertical: 20,
-    fontSize: 18,
-  },
-  toDo: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    backgroundColor: theme.toDoBg,
-    marginBottom: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 30,
-    borderRadius: 15,
-  },
-  toDoText: {
-    color: theme.grey,
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  toDoTextInput: {
-    color: "black",
-    backgroundColor: "white",
-    width: "90%",
-  },
 });
