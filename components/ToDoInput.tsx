@@ -3,12 +3,12 @@ import { StyleSheet, TextInput } from "react-native";
 
 interface IProps {
   textTyped: string;
-  isWorkShowedLast: boolean | undefined;
+  isWorkShownLast: boolean | undefined;
   onChangeText: (text: string) => void;
   addToDo: () => Promise<void>;
 }
 export default function ToDoInput({
-  isWorkShowedLast,
+  isWorkShownLast,
   textTyped,
   onChangeText,
   addToDo,
@@ -20,7 +20,7 @@ export default function ToDoInput({
       returnKeyType="done"
       onChangeText={onChangeText}
       value={textTyped}
-      placeholder={isWorkShowedLast ? "Add a To Do" : "Where do you want to go"}
+      placeholder={isWorkShownLast ? "Add a To Do" : "Where do you want to go"}
     />
   );
 }

@@ -1,5 +1,5 @@
 export interface IGlobalState {
-  isWorkShowedLast: boolean | undefined;
+  isWorkShownLast: boolean | undefined;
   toDos: IToDos;
 }
 

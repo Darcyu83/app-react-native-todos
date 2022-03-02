@@ -3,11 +3,11 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { theme } from "../colors";
 
 interface IProps {
-  isWorkShowedLast: boolean | undefined;
+  isWorkShownLast: boolean | undefined;
   work: () => void;
   travel: () => void;
 }
-export default function Header({ isWorkShowedLast, work, travel }: IProps) {
+export default function Header({ isWorkShownLast, work, travel }: IProps) {
   return (
     <View style={styles.header}>
       <TouchableOpacity onPress={work}>
@@ -16,9 +16,9 @@ export default function Header({ isWorkShowedLast, work, travel }: IProps) {
             styles.btnText,
             {
               color:
-                // isWorkShowedLast === undefined
+                // isWorkShownLast === undefined
                 //   ? ""
-                isWorkShowedLast ? "white" : theme.grey,
+                isWorkShownLast ? "white" : theme.grey,
             },
           ]}
         >
@@ -31,9 +31,9 @@ export default function Header({ isWorkShowedLast, work, travel }: IProps) {
             styles.btnText,
             {
               color:
-                // isWorkShowedLast === undefined
+                // isWorkShownLast === undefined
                 //   ? ""
-                !isWorkShowedLast ? "white" : theme.grey,
+                !isWorkShownLast ? "white" : theme.grey,
             },
           ]}
         >

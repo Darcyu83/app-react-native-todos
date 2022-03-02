@@ -13,11 +13,11 @@ export default function App() {
   const [textTyped, setTextTyped] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [globalState, setGlobalState] = useState<IGlobalState>({
-    isWorkShowedLast: undefined,
+    isWorkShownLast: undefined,
     toDos: {},
   });
 
-  const { isWorkShowedLast, toDos } = globalState;
+  const { isWorkShownLast, toDos } = globalState;
 
   const [modifiedKey, setModifiedKey] = useState("");
   const [textTypedToModi, setTextTypedToModi] = useState("");
@@ -27,12 +27,12 @@ export default function App() {
   }, []);
 
   const travel = () => {
-    setGlobalState({ ...globalState, isWorkShowedLast: false });
-    saveStateToStorage({ ...globalState, isWorkShowedLast: false });
+    setGlobalState({ ...globalState, isWorkShownLast: false });
+    saveStateToStorage({ ...globalState, isWorkShownLast: false });
   };
   const work = () => {
-    setGlobalState({ ...globalState, isWorkShowedLast: true });
-    saveStateToStorage({ ...globalState, isWorkShowedLast: true });
+    setGlobalState({ ...globalState, isWorkShownLast: true });
+    saveStateToStorage({ ...globalState, isWorkShownLast: true });
   };
 
   const onChangeText = (text: string) => {
@@ -75,7 +75,7 @@ export default function App() {
     }
     const newToDos: IToDos = {
       ...toDos,
-      [Date.now()]: { text: textTyped, working: isWorkShowedLast, done: false },
+      [Date.now()]: { text: textTyped, working: isWorkShownLast, done: false },
     };
     const state = { ...globalState, toDos: newToDos };
 
@@ -127,16 +127,16 @@ export default function App() {
   return (
     <View style={[styles.container]}>
       <StatusBar style="light" />
-      <Header isWorkShowedLast={isWorkShowedLast} work={work} travel={travel} />
+      <Header isWorkShownLast={isWorkShownLast} work={work} travel={travel} />
       <ToDoInput
-        isWorkShowedLast={isWorkShowedLast}
+        isWorkShownLast={isWorkShownLast}
         textTyped={textTyped}
         onChangeText={onChangeText}
         addToDo={addToDo}
       />
       <ToDosList
         closeModInput={closeModInput}
-        isWorkShowedLast={isWorkShowedLast}
+        isWorkShownLast={isWorkShownLast}
         toDos={toDos}
         textTypedToModi={textTypedToModi}
         isModalOpen={isModalOpen}

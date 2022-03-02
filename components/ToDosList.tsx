@@ -17,7 +17,7 @@ import ToDo from "./ToDo";
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 interface IProps {
-  isWorkShowedLast: boolean | undefined;
+  isWorkShownLast: boolean | undefined;
   toDos: IToDos;
   modifiedKey: string;
   textTypedToModi: string;
@@ -32,7 +32,7 @@ interface IProps {
 }
 
 export default function ToDosList({
-  isWorkShowedLast,
+  isWorkShownLast,
   toDos,
   modifiedKey,
   textTypedToModi,
@@ -50,7 +50,7 @@ export default function ToDosList({
       <ScrollView showsVerticalScrollIndicator={false}>
         {toDos &&
           Object.keys(toDos).map((key, idx) =>
-            isWorkShowedLast === toDos[key].working ? (
+            isWorkShownLast === toDos[key].working ? (
               <ToDo
                 key={key}
                 todoKey={key}
@@ -77,7 +77,7 @@ export default function ToDosList({
         }}
       >
         <View style={styles.modalView}>
-          <TextInput style={styles.modalTitle}>Modify</TextInput>
+          <Text style={styles.modalTitle}>Modify</Text>
           <TextInput
             onSubmitEditing={() => {
               updateToDo(modifiedKey);
