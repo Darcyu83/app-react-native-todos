@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "WorkHardTravelHardApp",
-    "slug": "WorkHardTravelHardApp",
+    "name": "Work Travel ToDo List",
+    "slug": "darcyu83wttl",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -27,6 +27,8 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "description": "Make ToDos you have to do separately on work and travel. ",
+    "githubUrl": "https://github.com/Darcyu83/app-react-native-todos.git"
   }
 }
